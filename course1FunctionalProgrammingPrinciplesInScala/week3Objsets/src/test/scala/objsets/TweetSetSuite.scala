@@ -38,17 +38,17 @@ class TweetSetSuite extends munit.FunSuite:
       assertEquals(size(set4c.union(set4d)), 4)
   }
 
-  test("union: with empty set1".ignore) {
+  test("union: with empty set1") {
     new TestSets:
       assertEquals(size(set5.union(set1)), 4)
   }
 
-  test("union: with empty set2".ignore) {
+  test("union: with empty set2") {
     new TestSets:
       assertEquals(size(set1.union(set5)), 4)
   }
 
-  test("descending: set5".ignore) {
+  test("descending: set5") {
     new TestSets:
       val trends = set5.descendingByRetweet
       assert(!trends.isEmpty)

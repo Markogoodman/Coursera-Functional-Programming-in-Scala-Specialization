@@ -54,7 +54,7 @@ abstract class TweetSet extends TweetSetInterface:
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  // def union(that: TweetSet): TweetSet = ???
+  def union(that: TweetSet): TweetSet
 
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -65,7 +65,7 @@ abstract class TweetSet extends TweetSetInterface:
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def mostRetweeted: Tweet = ???
+  def mostRetweeted: Tweet
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -76,7 +76,7 @@ abstract class TweetSet extends TweetSetInterface:
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def descendingByRetweet: TweetList = ???
+  def descendingByRetweet: TweetList
 
   /**
    * The following methods are already implemented
@@ -111,6 +111,12 @@ class Empty extends TweetSet:
 
   def union(that: TweetSet): TweetSet =
     that
+
+  def mostRetweeted: Tweet = 
+    throw java.util.NoSuchElementException("err mostRetweeted on Empty")
+
+  def descendingByRetweet: TweetList =
+    Nil
   /**
    * The following methods are already implemented
    */
@@ -126,18 +132,41 @@ class Empty extends TweetSet:
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = 
-    var tmp: TweetSet = acc
+    var res: TweetSet = acc
     if p(elem) then
-      tmp = tmp.incl(elem)
-    tmp = left.filterAcc(p, tmp)
-    tmp = right.filterAcc(p, tmp)
-    tmp
+      res = res.incl(elem)
+    res = left.filterAcc(p, res)
+    res = right.filterAcc(p, res)
+    res
 
   def union(that: TweetSet): TweetSet =
     // Since there's a union method in Empty, trying to reduce size of "this" is going to work
     // that.incl(elem).union(left).union(right) can work if there's an isEmpty method
     right.union(left.union(that.incl(elem))) 
-    
+
+  def mostRetweeted: Tweet = 
+    var res: Tweet = elem
+    try
+      val leftMost = left.mostRetweeted
+      if res.retweets < leftMost.retweets then
+        res = leftMost
+    catch 
+      case e: Exception => println(e)
+
+    try
+      val rightMost = right.mostRetweeted
+      if res.retweets < rightMost.retweets then
+        res = rightMost
+    catch
+      case e: Exception => println(e)
+
+    res
+
+  def descendingByRetweet: TweetList =
+    val mostTw = this.mostRetweeted
+    val newSet = this.remove(mostTw)
+    Cons(mostTw, newSet.descendingByRetweet)
+
   /**
    * The following methods are already implemented
    */
@@ -192,14 +221,17 @@ object GoogleVsApple:
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  lazy val googleTweets: TweetSet = ???
-  lazy val appleTweets: TweetSet = ???
-
+  lazy val googleTweets: TweetSet =
+    TweetReader.allTweets.filter(tw => google.exists(keyword => tw.text contains keyword))
+    
+  lazy val appleTweets: TweetSet =
+    TweetReader.allTweets.filter(tw => apple.exists(keyword => tw.text contains keyword))
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
    */
-  lazy val trending: TweetList = ???
+  lazy val trending: TweetList =
+    googleTweets.union(appleTweets).descendingByRetweet
 
 object Main extends App:
   // Print the trending tweets
