@@ -36,10 +36,10 @@ class HuffmanSuite extends munit.FunSuite:
   }
 
 
-  // test("decode and encode a very short text should be identity (10pts)") {
-  //   new TestTrees:
-  //     assertEquals(decode(t1, encode(t1)("ab".toList)), "ab".toList)
-  // }
+  test("decode and encode a very short text should be identity (10pts)") {
+    new TestTrees:
+      assertEquals(decode(t1, encode(t1)("ab".toList)), "ab".toList)
+  }
 
 
   import scala.concurrent.duration.*
